@@ -72,17 +72,6 @@ Wait for the AI to validate and process the document.
 
 View your Professional Profile, Skill Gaps, and Career Roadmap displayed below.
 
-🛡️ Validation Logic
-The backend includes a strict gatekeeper (validate_document) that prevents unnecessary API calls by filtering out:
-
-❌ Source Code files (Python, Java, React, etc.)
-
-❌ Financial Documents (Bills, Invoices, Tax forms)
-
-❌ Academic Lab Manuals
-
-✅ Only valid Resumes/CVs are processed.
-
 🤝 Contributing
 Contributions are welcome! Please follow these steps:
 
