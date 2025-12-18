@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 AI Resume & Career Architect
 
-## Getting Started
+A full-stack AI application that analyzes resumes to provide personalized career roadmaps, skill gap assessments, and professional profiling.
 
-First, run the development server:
 
+## 🌟 Features
+
+* **📄 PDF Resume Parsing:** Extracts text safely from PDF documents.
+* **🤖 AI-Powered Analysis:** Uses Google Gemini to act as a "Senior Technical Recruiter".
+* **🛡️ Smart Document Validation:** Automatically rejects non-resume files (like bills, source code, government forms, or log files) before processing.
+* **🗺️ Career Roadmap:** Generates a structured 6-month plan to bridge skill gaps.
+* **✨ Modern UI:** Built with Next.js, Framer Motion animations, and Markdown rendering.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend (Client)
+* **Framework:** Next.js / React
+* **Styling:** Tailwind CSS (implied), Lucide React (Icons)
+* **Animations:** Framer Motion
+* **HTTP Client:** Axios
+* **Rendering:** React Markdown (with GFM)
+
+### Backend (Server)
+* **Framework:** Python Flask
+* **AI Model:** Google Gemini (via API)
+* **PDF Processing:** PyPDF2 / PDFMiner (implied)
+* **CORS:** Flask-CORS for secure frontend-backend communication
+
+---
+
+## ⚙️ Installation & Setup
+
+Follow these steps to run the project locally.
+
+### 1. Clone the Repository
 ```bash
+git clone [https://github.com/YOUR_USERNAME/Ai-Resume-Roadmap.git](https://github.com/YOUR_USERNAME/Ai-Resume-Roadmap.git)
+cd Ai-Resume-Roadmap
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+GOOGLE_API_KEY=your_actual_api_key_here
+
+cd client
+
+# Install Node modules
+npm install
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+📖 How to Use
+Open the application in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Click "Drop your PDF here" to select a resume.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Click "Analyze My Career".
 
-## Learn More
+Wait for the AI to validate and process the document.
 
-To learn more about Next.js, take a look at the following resources:
+View your Professional Profile, Skill Gaps, and Career Roadmap displayed below.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🛡️ Validation Logic
+The backend includes a strict gatekeeper (validate_document) that prevents unnecessary API calls by filtering out:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+❌ Source Code files (Python, Java, React, etc.)
 
-## Deploy on Vercel
+❌ Financial Documents (Bills, Invoices, Tax forms)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+❌ Academic Lab Manuals
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+✅ Only valid Resumes/CVs are processed.
+
+🤝 Contributing
+Contributions are welcome! Please follow these steps:
+
+Fork the repository.
+
+Create a new branch (git checkout -b feature/YourFeature).
+
+Commit your changes (git commit -m 'Add some feature').
+
+Push to the branch (git push origin feature/YourFeature).
+
+Open a Pull Request.
