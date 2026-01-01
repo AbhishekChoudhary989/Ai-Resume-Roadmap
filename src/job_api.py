@@ -1,35 +1,37 @@
+import os
 from apify_client import ApifyClient
-import os 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-apify_client = ApifyClient(os.getenv("APIFY_API_TOKEN"))
-
-# Fetch LinkedIn jobs based on search query and location
-def fetch_linkedin_jobs(search_query, location = "india", rows=60):
+def fetch_indeed_jobs(position, location):
+    token = os.getenv("APIFY_API_TOKEN")
+    client = ApifyClient(token)
+    
+    # LIMITING TO 10 JOBS FOR SPEED
     run_input = {
-            "title": search_query,
-            "location": location,
-            "rows": rows,
-            "proxy": {
-                "useApifyProxy": True,
-                "apifyProxyGroups": ["RESIDENTIAL"],
-            }
-        }
-    run = apify_client.actor("BHzefUZlZRKWxkTck").call(run_input=run_input)
-    jobs = list(apify_client.dataset(run["defaultDatasetId"]).iterate_items())
-    return jobs
-
-
-# Fetch Naukri jobs based on search query and location
-def fetch_naukri_jobs(search_query, location = "india", rows=60):
-    run_input = {
-        "keyword": search_query,
-        "maxJobs": 60,
-        "freshness": "all",
-        "sortBy": "relevance",
-        "experience": "all",
+        "position": position,
+        "country": "IN",
+        "location": location,
+        "maxItems": 10, # Changed from 30 to 10 for faster results
+        "scrapeCompanyDetails": False, # Setting this to False makes it 3x faster
+        "saveOnlyUniqueItems": True,
+        "followRedirectsForApplyLink": False # Disabling redirects saves time
     }
-    run = apify_client.actor("alpcnRV9YI9lYVPWk").call(run_input=run_input)
-    jobs = list(apify_client.dataset(run["defaultDatasetId"]).iterate_items())
-    return jobs
+
+    try:
+        # Calls the actor found in your screenshot
+        run = client.actor("misceres/indeed-scraper").call(run_input=run_input)
+        
+        jobs = []
+        for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+            jobs.append({
+                "title": item.get("positionName") or item.get("jobTitle"),
+                "company": item.get("company"),
+                "salary": item.get("salaryText") or "Market Standard",
+                "url": item.get("url")
+            })
+        return jobs
+    except Exception as e:
+        print(f"Scraper error: {e}")
+        return []

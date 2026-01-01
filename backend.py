@@ -1,60 +1,47 @@
+import os
+import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from src.helper import extract_text_from_pdf, ask_gemini
-import os
+from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor # For faster parallel execution
+from src.job_api import fetch_indeed_jobs 
+from src.helper import extract_text_from_pdf, extract_search_parameters, ask_gemini
 
-# --- 1. Initialize the App (This was missing!) ---
+load_dotenv()
 app = Flask(__name__)
-CORS(app)  # Allows your React frontend to connect
+# CRITICAL: Allow your Next.js app (usually port 3000) to talk to Flask
+CORS(app) 
 
-# --- 2. The Routes ---
-@app.route('/')
-def home():
-    return "Backend is running successfully! 🚀"
+# Executor for parallel processing to speed up the 30s delay
+executor = ThreadPoolExecutor(max_workers=2)
 
 @app.route('/analyze-resume', methods=['POST'])
-def analyze_resume():
+def analyze():
     if 'resume' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
-    
+
     file = request.files['resume']
     
     try:
+        # Step 1: Extract raw text
         text = extract_text_from_pdf(file)
         
-        # Expert Prompt for Gemini
-        prompt = f"""
-        Act as an expert Senior Technical Recruiter and Career Coach. Analyze the following resume text and provide a highly detailed, structured report in Markdown format.
-        
-        RESUME TEXT:
-        {text}
-        
-        ---
-        
-        OUTPUT FORMAT (Use Markdown):
-        
-        ## 📄 Professional Profile
-        *Write a compelling 3-4 sentence professional summary of the candidate.*
-        
-        ## 🛠️ Technical Skills Analysis
-        *List the key skills found, categorized by Frontend, Backend, Database, Tools, etc.*
-        
-        ## 📉 Critical Skill Gaps (What is Missing?)
-        *Create a Markdown Table with two columns: "Missing Skill" and "Why it is needed". Identify missing modern technologies (e.g., if they know React, do they know Redux/Next.js? If they know Python, do they know Docker/AWS?).*
-        
-        ## 🚀 Career Roadmap (Next 6 Months)
-        *Create a step-by-step list or table suggesting exactly what projects or certifications the candidate should pursue to reach a Senior or Full-Stack level.*
-        
-        ## ⚖️ Final Verdict
-        *Give a candid assessment of where this candidate stands (Junior/Mid/Senior) and what their best job fit is right now.*
-        """
-        
-        analysis = ask_gemini(prompt)
-        
-        return jsonify({"analysis": analysis})
-        
+        # Step 2: Extract search params
+        params = extract_search_parameters(text)
+
+        # Step 3 & 4: RUN IN PARALLEL to save time
+        job_task = executor.submit(fetch_indeed_jobs, params['job_title'], params['location'])
+        ai_task = executor.submit(ask_gemini, text, params)
+
+        return jsonify({
+            "analysis": ai_task.result(),
+            "live_jobs": job_task.result(),
+            "extracted_params": params
+        })
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    # Ensure it runs on 127.0.0.1:5000
+    app.run(host='127.0.0.1', port=5000, debug=True)
